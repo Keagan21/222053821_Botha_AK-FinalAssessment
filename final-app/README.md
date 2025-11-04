@@ -324,10 +324,31 @@ final-app/
 - Ensure `@react-native-community/datetimepicker` is installed
 - For Android, may require additional native setup
 
-### AsyncStorage Errors
+### AsyncStorage Errors (Including "String cannot be cast to Boolean")
 
-- Clear app data: Settings → Apps → [Your App] → Clear Data
-- Or uninstall and reinstall the app
+If you encounter `java.lang.String cannot be cast to java.lang.Boolean` error:
+
+1. **Clear app data on device/emulator:**
+
+   - **Android Device**: Settings → Apps → [Your App] → Storage → Clear Data
+   - **Android Emulator**:
+     ```bash
+     adb shell pm clear com.yourapp.package
+     ```
+     (Replace with your actual package name from `app.json`)
+
+2. **Uninstall and reinstall the app:**
+
+   - Completely uninstall the app from your device/emulator
+   - Reinstall using `npx expo start` and scan the QR code
+
+3. **Clear Metro bundler cache:**
+
+   ```bash
+   npx expo start --clear
+   ```
+
+4. **The app now includes automatic cleanup** - corrupted AsyncStorage values are automatically detected and cleared on app start. If the error persists, use the manual methods above.
 
 ## Important Notes
 

@@ -47,6 +47,11 @@ const SignUp = ({ navigation }) => {
       });
 
       await signOut(auth);
+      try {
+        await AsyncStorage.removeItem('hasSignedUp');
+      } catch (error) {
+        console.error('Error clearing old hasSignedUp:', error);
+      }
       await AsyncStorage.setItem('hasSignedUp', 'true');
       Alert.alert('Success', 'Account created successfully! Please sign in.');
       navigation.navigate('SignIn');

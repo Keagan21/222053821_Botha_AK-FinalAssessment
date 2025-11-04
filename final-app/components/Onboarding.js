@@ -42,6 +42,12 @@ const Onboarding = ({ onComplete }) => {
       onComplete();
     } catch (error) {
       console.error('Error saving onboarding status:', error);
+      try {
+        await AsyncStorage.removeItem('onboardingCompleted');
+        await AsyncStorage.setItem('onboardingCompleted', 'true');
+      } catch (retryError) {
+        console.error('Error retrying save:', retryError);
+      }
       onComplete();
     }
   };
