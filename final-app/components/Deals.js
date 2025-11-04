@@ -32,16 +32,15 @@ const Deals = () => {
       }
       
       const data = await response.json();
-      // Transform products to hotel-like format for display
       const deals = data.map((product, index) => ({
         id: product.id.toString(),
         name: product.title.length > 40 ? product.title.substring(0, 40) + '...' : product.title,
         location: product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : 'Special Offer',
         rating: (product.rating?.rate || 4.0).toFixed(1),
-        price: Math.round(product.price * 10), // Convert to hotel-like pricing
+        price: Math.round(product.price * 10),
         image: { uri: product.image },
         description: product.description || 'Amazing deal!',
-        originalProduct: product, // Keep original for reference
+        originalProduct: product,
       }));
       
       setProducts(deals);
@@ -58,7 +57,6 @@ const Deals = () => {
     <TouchableOpacity
       style={styles.dealCard}
       onPress={() => {
-        // Navigate to hotel details with the deal info
         navigation.navigate('HotelDetails', { hotel: item });
       }}
     >

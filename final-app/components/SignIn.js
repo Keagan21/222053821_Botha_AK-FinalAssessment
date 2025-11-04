@@ -20,7 +20,6 @@ const SignIn = ({ navigation }) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Navigation will be handled by onAuthStateChanged in App.js
     } catch (error) {
       let errorMessage = 'An error occurred';
       if (error.code === 'auth/user-not-found') {

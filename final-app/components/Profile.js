@@ -37,7 +37,6 @@ const Profile = () => {
       querySnapshot.forEach((doc) => {
         bookingsData.push({ id: doc.id, ...doc.data() });
       });
-      // Sort by createdAt in JavaScript (most recent first)
       bookingsData.sort((a, b) => {
         if (a.createdAt && b.createdAt) {
           return b.createdAt.toMillis() - a.createdAt.toMillis();
@@ -47,7 +46,6 @@ const Profile = () => {
       setBookings(bookingsData);
     } catch (error) {
       console.error('Error fetching bookings:', error);
-      // Don't show error alert if just no bookings exist
       if (error.code !== 'permission-denied') {
         console.log('Bookings fetch error (non-critical):', error.message);
       }
@@ -71,7 +69,6 @@ const Profile = () => {
     return unsubscribe;
   }, [fetchBookings]);
 
-  // Refresh bookings when tab is focused
   useFocusEffect(
     useCallback(() => {
       if (user) {
@@ -82,19 +79,16 @@ const Profile = () => {
 
   const handleEditProfile = async () => {
     if (editing) {
-      // Save changes
       if (!displayName.trim()) {
         Alert.alert('Error', 'Name cannot be empty');
         return;
       }
       setUpdating(true);
       try {
-        // Update Firebase Auth profile
         await updateProfile(auth.currentUser, {
           displayName: displayName.trim()
         });
         
-        // Update Firestore user profile
         if (user && user.uid) {
           const userDocRef = doc(db, 'users', user.uid);
           await updateDoc(userDocRef, {
@@ -112,7 +106,6 @@ const Profile = () => {
         setUpdating(false);
       }
     } else {
-      // Start editing
       setEditing(true);
     }
   };
@@ -132,7 +125,6 @@ const Profile = () => {
           onPress: async () => {
             try {
               await signOut(auth);
-              // Navigation will be handled by onAuthStateChanged in App.js
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Error', 'Failed to logout');
@@ -146,7 +138,6 @@ const Profile = () => {
   const formatDate = (dateValue) => {
     try {
       let date;
-      // Handle Firestore timestamp
       if (dateValue && typeof dateValue.toDate === 'function') {
         date = dateValue.toDate();
       } else if (dateValue && typeof dateValue.toMillis === 'function') {

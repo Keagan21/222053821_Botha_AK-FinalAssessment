@@ -17,33 +17,29 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      if (user) {
-        // User is signed in, check onboarding
-        await checkOnboardingStatus();
-      } else {
-        // User is signed out, check if they have signed up before
-        const hasSignedUp = await AsyncStorage.getItem('hasSignedUp');
-        if (hasSignedUp === 'true') {
-          setShowOnboarding(false); // Skip onboarding if already signed up
+      try {
+        if (user) {
+          const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
+          const isOnboardingCompleted = onboardingCompleted === 'true';
+          setShowOnboarding(!isOnboardingCompleted);
         } else {
-          setShowOnboarding(null); // Will be set after sign up
+          const hasSignedUp = await AsyncStorage.getItem('hasSignedUp');
+          const isSignedUp = hasSignedUp === 'true';
+          if (isSignedUp) {
+            setShowOnboarding(false);
+          } else {
+            setShowOnboarding(null);
+          }
         }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        setShowOnboarding(false);
       }
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const onboardingCompleted = await AsyncStorage.getItem('onboardingCompleted');
-      setShowOnboarding(onboardingCompleted !== 'true');
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      setShowOnboarding(false);
-    }
-  };
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
@@ -58,7 +54,7 @@ export default function App() {
     );
   }
 
-  if (showOnboarding) {
+  if (showOnboarding === true) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 

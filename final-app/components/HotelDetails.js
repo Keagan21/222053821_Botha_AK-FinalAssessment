@@ -19,10 +19,8 @@ const HotelDetails = () => {
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch reviews from Firestore with real-time listener
   useEffect(() => {
     const reviewsRef = collection(db, 'reviews');
-    // Try with orderBy first, fallback to just where if index doesn't exist
     const q = query(
       reviewsRef,
       where('hotelId', '==', hotel.id),
@@ -36,7 +34,6 @@ const HotelDetails = () => {
         snapshot.forEach((doc) => {
           reviewsData.push({ id: doc.id, ...doc.data() });
         });
-        // Sort by createdAt in JavaScript if needed
         reviewsData.sort((a, b) => {
           if (a.createdAt && b.createdAt) {
             const aTime = a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
@@ -50,7 +47,6 @@ const HotelDetails = () => {
       },
       (error) => {
         console.error('Error fetching reviews:', error);
-        // Fallback: try without orderBy
         if (error.code === 'failed-precondition') {
           const fallbackQuery = query(
             reviewsRef,
@@ -88,15 +84,13 @@ const HotelDetails = () => {
     return unsubscribe;
   }, [hotel.id]);
 
-  // Fetch weather data
   useEffect(() => {
     const fetchWeather = async () => {
       setWeatherLoading(true);
       setWeatherError(null);
       try {
-        // Extract city from location (e.g., "New York, NY" -> "New York")
         const cityName = hotel.location.split(',')[0].trim();
-        const API_KEY = 'YOUR_OPENWEATHER_API_KEY'; // Replace with your API key
+        const API_KEY = 'YOUR_OPENWEATHER_API_KEY';
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&units=metric&appid=${API_KEY}`
         );
@@ -181,7 +175,6 @@ const HotelDetails = () => {
         <Text style={styles.name}>{hotel.name}</Text>
         <Text style={styles.location}>{hotel.location}</Text>
         
-        {/* Weather Section */}
         <View style={styles.weatherContainer}>
           {weatherLoading ? (
             <ActivityIndicator size="small" color="#007bff" />
@@ -206,7 +199,6 @@ const HotelDetails = () => {
           {hotel.description || 'A wonderful hotel offering comfortable stays and excellent amenities. Enjoy your stay with us!'}
         </Text>
 
-        {/* Reviews Section */}
         <View style={styles.reviewsContainer}>
           <Text style={styles.reviewsTitle}>Reviews</Text>
           {loading ? (
@@ -255,7 +247,6 @@ const HotelDetails = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Add Review Modal */}
       <Modal
         animationType="slide"
         transparent={true}

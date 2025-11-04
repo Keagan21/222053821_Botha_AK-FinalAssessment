@@ -42,6 +42,7 @@ const Onboarding = ({ onComplete }) => {
       onComplete();
     } catch (error) {
       console.error('Error saving onboarding status:', error);
+      onComplete();
     }
   };
 
