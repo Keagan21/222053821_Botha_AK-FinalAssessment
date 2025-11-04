@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
 
 const SignUp = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !name) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -29,13 +31,37 @@ const SignUp = ({ navigation }) => {
     }
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      await signOut(auth); // Sign out immediately after creating account
+    
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      
+      await updateProfile(user, { displayName: name.trim() });
+
+   
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        email: user.email,
+        name: name.trim(),
+        createdAt: new Date(),
+      });
+
+      await signOut(auth);
       await AsyncStorage.setItem('hasSignedUp', 'true');
       Alert.alert('Success', 'Account created successfully! Please sign in.');
       navigation.navigate('SignIn');
     } catch (error) {
-      Alert.alert('Sign Up Error', error.message);
+      let errorMessage = 'An error occurred';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Please use a different email.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please choose a stronger password.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else {
+        errorMessage = error.message;
+      }
+      Alert.alert('Sign Up Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,6 +70,13 @@ const SignUp = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Name"
+        value={name}
+        onChangeText={setName}
+        autoCapitalize="words"
+      />
       <TextInput
         style={styles.input}
         placeholder="Email"

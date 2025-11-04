@@ -22,7 +22,21 @@ const SignIn = ({ navigation }) => {
       await signInWithEmailAndPassword(auth, email, password);
       // Navigation will be handled by onAuthStateChanged in App.js
     } catch (error) {
-      Alert.alert('Sign In Error', error.message);
+      let errorMessage = 'An error occurred';
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email. Please sign up first.';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password. Please try again.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else {
+        errorMessage = error.message;
+      }
+      Alert.alert('Sign In Error', errorMessage);
     } finally {
       setLoading(false);
     }

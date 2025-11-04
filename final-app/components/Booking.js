@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { auth, db } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const Booking = () => {
   const navigation = useNavigation();
@@ -9,7 +11,7 @@ const Booking = () => {
   const { hotel } = route.params;
 
   const [checkInDate, setCheckInDate] = useState(new Date());
-  const [checkOutDate, setCheckOutDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000)); // Tomorrow
+  const [checkOutDate, setCheckOutDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
   const [rooms, setRooms] = useState(1);
   const [showCheckInPicker, setShowCheckInPicker] = useState(false);
   const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
@@ -39,35 +41,61 @@ const Booking = () => {
     return true;
   };
 
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
     if (!validateDates()) return;
+
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Error', 'You must be logged in to make a booking');
+      return;
+    }
 
     const bookingDetails = {
       hotel: hotel.name,
-      checkIn: checkInDate.toDateString(),
-      checkOut: checkOutDate.toDateString(),
+      checkIn: checkInDate.toISOString(),
+      checkOut: checkOutDate.toISOString(),
       rooms,
       totalCost: calculateTotalCost(),
       days: calculateDays(),
+      userId: user.uid,
+      createdAt: serverTimestamp(),
     };
 
     Alert.alert(
       'Confirm Booking',
-      `Hotel: ${bookingDetails.hotel}\nCheck-in: ${bookingDetails.checkIn}\nCheck-out: ${bookingDetails.checkOut}\nRooms: ${bookingDetails.rooms}\nTotal: $${bookingDetails.totalCost}`,
+      `Hotel: ${bookingDetails.hotel}\nCheck-in: ${checkInDate.toDateString()}\nCheck-out: ${checkOutDate.toDateString()}\nRooms: ${bookingDetails.rooms}\nTotal: $${bookingDetails.totalCost}`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm',
-          onPress: () => {
-            // Store booking in app state (for now, just log it)
-            console.log('Booking confirmed:', bookingDetails);
-            Alert.alert('Success', 'Your booking has been confirmed!', [
-              { text: 'OK', onPress: () => navigation.navigate('Explore') }
-            ]);
+          onPress: async () => {
+            try {
+              await addDoc(collection(db, 'bookings'), bookingDetails);
+              Alert.alert('Success', 'Your booking has been confirmed!', [
+                { text: 'OK', onPress: () => navigation.navigate('Explore') }
+              ]);
+            } catch (error) {
+              console.error('Error saving booking:', error);
+              Alert.alert('Error', 'Failed to save booking. Please try again.');
+            }
           }
         }
       ]
     );
+  };
+
+  const onCheckInChange = (event, selectedDate) => {
+    setShowCheckInPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setCheckInDate(selectedDate);
+    }
+  };
+
+  const onCheckOutChange = (event, selectedDate) => {
+    setShowCheckOutPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setCheckOutDate(selectedDate);
+    }
   };
 
   return (
@@ -79,17 +107,15 @@ const Booking = () => {
         <TouchableOpacity style={styles.dateButton} onPress={() => setShowCheckInPicker(true)}>
           <Text style={styles.dateText}>{checkInDate.toDateString()}</Text>
         </TouchableOpacity>
-        <DatePicker
-          modal
-          open={showCheckInPicker}
-          date={checkInDate}
-          onConfirm={(date) => {
-            setCheckInDate(date);
-            setShowCheckInPicker(false);
-          }}
-          onCancel={() => setShowCheckInPicker(false)}
-          minimumDate={new Date()}
-        />
+        {showCheckInPicker && (
+          <DateTimePicker
+            value={checkInDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onCheckInChange}
+            minimumDate={new Date()}
+          />
+        )}
       </View>
 
       <View style={styles.section}>
@@ -97,17 +123,15 @@ const Booking = () => {
         <TouchableOpacity style={styles.dateButton} onPress={() => setShowCheckOutPicker(true)}>
           <Text style={styles.dateText}>{checkOutDate.toDateString()}</Text>
         </TouchableOpacity>
-        <DatePicker
-          modal
-          open={showCheckOutPicker}
-          date={checkOutDate}
-          onConfirm={(date) => {
-            setCheckOutDate(date);
-            setShowCheckOutPicker(false);
-          }}
-          onCancel={() => setShowCheckOutPicker(false)}
-          minimumDate={new Date(Date.now() + 24 * 60 * 60 * 1000)}
-        />
+        {showCheckOutPicker && (
+          <DateTimePicker
+            value={checkOutDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onCheckOutChange}
+            minimumDate={new Date(Date.now() + 24 * 60 * 60 * 1000)}
+          />
+        )}
       </View>
 
       <View style={styles.section}>

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
 
 // Sample hotel data
 const sampleHotels = [
@@ -66,8 +64,8 @@ const Explore = () => {
   const navigation = useNavigation();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('rating'); // 'rating' or 'price'
-  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' or 'desc'
+  const [sortBy, setSortBy] = useState('rating'); 
+  const [sortOrder, setSortOrder] = useState('desc'); 
 
   useEffect(() => {
     setTimeout(() => {
@@ -75,14 +73,6 @@ const Explore = () => {
       setLoading(false);
     }, 1000);
   }, []);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  };
 
   const sortHotels = (hotelsToSort) => {
     return [...hotelsToSort].sort((a, b) => {
@@ -135,9 +125,6 @@ const Explore = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Explore Hotels</Text>
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.sortContainer}>
@@ -182,9 +169,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 20,
@@ -195,17 +179,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-  },
-  signOutButton: {
-    backgroundColor: '#dc3545',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 5,
-  },
-  signOutText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   sortContainer: {
     flexDirection: 'row',
