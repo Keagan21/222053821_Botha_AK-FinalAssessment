@@ -9,16 +9,17 @@ import Onboarding from './components/Onboarding';
 import AuthStack from './navigation/AuthStack';
 import MainStack from './navigation/MainStack';
 
+const STORAGE_VERSION = '1.0.1';
+
 const safeGetAsyncStorage = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);
     if (value === null) return null;
-    const stringValue = String(value);
-    if (stringValue !== 'true' && stringValue !== 'false' && stringValue !== '') {
+    if (typeof value !== 'string') {
       await AsyncStorage.removeItem(key);
       return null;
     }
-    return stringValue;
+    return value;
   } catch (error) {
     console.error(`Error reading ${key} from AsyncStorage:`, error);
     try {
@@ -30,34 +31,43 @@ const safeGetAsyncStorage = async (key) => {
   }
 };
 
-const clearCorruptedStorage = async () => {
+const performStorageMigration = async () => {
+  let migrationVersion = null;
   try {
-    const keys = ['onboardingCompleted', 'hasSignedUp'];
-    for (const key of keys) {
+    migrationVersion = await AsyncStorage.getItem('storage_version');
+  } catch (error) {
+    console.log('Could not read storage_version, will perform migration');
+  }
+  
+  if (migrationVersion !== STORAGE_VERSION) {
+    console.log('Performing storage migration - clearing all AsyncStorage data');
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      if (allKeys && allKeys.length > 0) {
+        await AsyncStorage.multiRemove(allKeys);
+        console.log('Cleared all AsyncStorage keys');
+      }
+    } catch (clearError) {
+      console.error('Error clearing AsyncStorage:', clearError);
       try {
-        const value = await AsyncStorage.getItem(key);
-        if (value !== null) {
+        const keys = ['onboardingCompleted', 'hasSignedUp', '@react-native-async-storage/async-storage'];
+        for (const key of keys) {
           try {
-            const testValue = String(value);
-            if (testValue !== 'true' && testValue !== 'false') {
-              await AsyncStorage.removeItem(key);
-              console.log(`Cleared corrupted ${key}`);
-            }
-          } catch (castError) {
             await AsyncStorage.removeItem(key);
-            console.log(`Cleared corrupted ${key} due to cast error`);
+          } catch (e) {
+            console.error(`Could not remove ${key}:`, e);
           }
         }
-      } catch (error) {
-        try {
-          await AsyncStorage.removeItem(key);
-        } catch (removeError) {
-          console.error(`Could not clear ${key}:`, removeError);
-        }
+      } catch (fallbackError) {
+        console.error('Fallback cleanup failed:', fallbackError);
       }
     }
-  } catch (error) {
-    console.error('Error clearing corrupted storage:', error);
+    
+    try {
+      await AsyncStorage.setItem('storage_version', STORAGE_VERSION);
+    } catch (versionError) {
+      console.error('Error setting storage version:', versionError);
+    }
   }
 };
 
@@ -68,7 +78,7 @@ export default function App() {
 
   useEffect(() => {
     const initialize = async () => {
-      await clearCorruptedStorage();
+      await performStorageMigration();
     };
     initialize();
 

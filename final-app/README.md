@@ -1,40 +1,4 @@
-# Hotel Booking App
 
-A modern React Native mobile application for browsing and booking hotels. Built with Expo, Firebase, and React Navigation.
-
-## Features
-
-### Authentication
-
-- **Sign Up**: Create new user accounts with email and password
-- **Sign In**: Secure login with Firebase Authentication
-- **Password Reset**: Forgot password functionality
-- **Onboarding**: Multi-screen tutorial for first-time users
-
-### Hotel Management
-
-- **Explore Hotels**: Browse a curated list of hotels with images, ratings, and pricing
-- **Sort & Filter**: Sort hotels by price or rating (ascending/descending)
-- **Hotel Details**: View detailed information about each hotel
-- **Weather Information**: See current weather for hotel locations (OpenWeatherMap API)
-- **Reviews**: View and add reviews with star ratings
-
-### Booking System
-
-- **Book Hotels**: Select check-in/check-out dates and number of rooms
-- **Date Picker**: Easy date selection using native date picker
-- **Cost Calculation**: Automatic total cost calculation based on dates and rooms
-- **Booking Confirmation**: Review and confirm bookings before submission
-- **My Bookings**: View all your confirmed bookings in the Profile screen
-
-### Additional Features
-
-- **Special Deals**: Browse special hotel deals from Fake Store API
-- **Profile Management**: Edit your name and view booking history
-- **Firebase Integration**: Real-time data synchronization
-- **Offline Support**: Authentication state persistence
-
-## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
