@@ -90,7 +90,7 @@ const HotelDetails = () => {
       setWeatherError(null);
       try {
         const cityName = hotel.location.split(',')[0].trim();
-        const API_KEY = 'YOUR_OPENWEATHER_API_KEY';
+        const API_KEY = '2d4f4006075125f23ba4c142a0ca1cd3';
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&units=metric&appid=${API_KEY}`
         );

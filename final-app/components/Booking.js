@@ -11,7 +11,7 @@ const Booking = () => {
   const { hotel } = route.params;
 
   const [checkInDate, setCheckInDate] = useState(new Date());
-  const [checkOutDate, setCheckOutDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
+  const [checkOutDate, setCheckOutDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000)); 
   const [rooms, setRooms] = useState(1);
   const [showCheckInPicker, setShowCheckInPicker] = useState(false);
   const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
@@ -70,6 +70,7 @@ const Booking = () => {
           text: 'Confirm',
           onPress: async () => {
             try {
+        
               await addDoc(collection(db, 'bookings'), bookingDetails);
               Alert.alert('Success', 'Your booking has been confirmed!', [
                 { text: 'OK', onPress: () => navigation.navigate('Explore') }
